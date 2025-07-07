@@ -29,41 +29,43 @@ function AuthScreen() {
 }
 
 function HomeScreen() {
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [scanning, setScanning] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleStartStream = async () => {
-    setLoading(true);
-    setSuccess(false);
-    setError(null);
-    try {
-      const response = await fetch('/api/stream/start', { method: 'POST' });
-      if (!response.ok) throw new Error('Failed to start stream');
-      setSuccess(true);
-    } catch (err) {
-      setError(err.message || 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Fetch participants on mount
+  useEffect(() => {
+    const fetchParticipants = async () => {
+      setScanning(true);
+      setError(null);
+      try {
+        const res = await zoomSdk.getMeetingParticipants();
+        const list = (res?.participants || []).map((p) => ({
+          ...p,
+          verified: Math.random() > 0.5 // Random for demo
+        }));
+        setParticipants(list);
+      } catch (err) {
+        setError('Could not fetch participants. Please make sure you are in a Zoom meeting and have the right permissions.');
+      } finally {
+        setScanning(false);
+      }
+    };
+    fetchParticipants();
+  }, []);
 
   const handleScan = async () => {
     setScanning(true);
     setError(null);
     try {
-      // Get participants from Zoom SDK
       const res = await zoomSdk.getMeetingParticipants();
-      // For demo, randomly assign verified status
       const list = (res?.participants || []).map((p) => ({
         ...p,
         verified: Math.random() > 0.5 // Random for demo
       }));
       setParticipants(list);
     } catch (err) {
-      setError('Failed to fetch participants');
+      setError('Could not fetch participants. Please make sure you are in a Zoom meeting and have the right permissions.');
     } finally {
       setScanning(false);
     }
@@ -72,49 +74,53 @@ function HomeScreen() {
   return (
     <div className="home-container">
       <header className="home-header">
-        <h1>Home</h1>
-        <p>This is a beautiful, responsive home screen with Zoom context ✅</p>
+        <h1 style={{ fontSize: '2.2rem', fontWeight: 700, color: '#4F8A8B', letterSpacing: 1 }}>Deepfake Defend</h1>
+        <p style={{ fontSize: '1.1rem', color: '#555', marginTop: 8 }}>Protect your meeting from deepfakes. See who is verified in real time.</p>
       </header>
       <main className="home-main">
-        <div className="home-card">
-          <h2>Welcome!</h2>
-          <p>Enjoy your stay.</p>
-          <button className="stream-btn" onClick={handleStartStream} disabled={loading}>
-            {loading ? 'Starting Stream...' : 'Start Live Stream'}
+        <div className="home-card" style={{ maxWidth: 500, width: '100%', boxShadow: '0 6px 32px rgba(34,197,94,0.10)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+            <svg width="48" height="48" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g className="shield-pulse">
+                <path d="M40 10 L70 25 V45 C70 60 55 70 40 75 C25 70 10 60 10 45 V25 Z" fill="#4F8A8B" stroke="#2C3333" strokeWidth="3"/>
+                <path d="M40 20 L60 30 V45 C60 55 50 62 40 65 C30 62 20 55 20 45 V30 Z" fill="#F9F9F9" stroke="#2C3333" strokeWidth="2"/>
+              </g>
+            </svg>
+            <span style={{ fontWeight: 600, fontSize: '1.3rem', marginLeft: 16, color: '#222' }}>Participant Verification</span>
+          </div>
+          <button className="scan-btn" onClick={handleScan} disabled={scanning} style={{marginBottom: '1.5rem'}}>
+            {scanning ? 'Scanning...' : 'Rescan Participants'}
           </button>
-          <button className="scan-btn" onClick={handleScan} disabled={scanning} style={{marginTop: '1rem'}}>
-            {scanning ? 'Scanning...' : 'Scan'}
-          </button>
-          {success && <div className="stream-success">✅ Stream started!</div>}
-          {error && <div className="stream-error">❌ {error}</div>}
-          {participants.length > 0 && (
-            <div className="participants-list" style={{marginTop: '2rem', textAlign: 'left'}}>
-              <h3>Participants</h3>
-              <ul style={{listStyle: 'none', padding: 0}}>
-                {participants.map((p) => (
-                  <li key={p.participantUUID} style={{display: 'flex', alignItems: 'center', marginBottom: '0.5rem'}}>
-                    <span style={{flex: 1}}>{p.screenName || p.participantUUID}</span>
+          {error && <div className="stream-error" style={{marginBottom: 16}}>{error}</div>}
+          <div className="participants-list" style={{marginTop: 0, textAlign: 'left'}}>
+            <h3 style={{marginBottom: 12, color: '#4F8A8B'}}>Participants</h3>
+            {participants.length === 0 && !scanning && !error && (
+              <div style={{color: '#888', fontStyle: 'italic'}}>No participants found.</div>
+            )}
+            <ul style={{listStyle: 'none', padding: 0}}>
+              {participants.map((p) => (
+                <li key={p.participantUUID} style={{display: 'flex', alignItems: 'center', marginBottom: '0.5rem', background: '#f0fdfa', borderRadius: 8, padding: '0.5rem 1rem'}}>
+                  <span style={{flex: 1, fontWeight: 500}}>{p.screenName || p.participantUUID}</span>
+                  <span style={{
+                    color: p.verified ? '#22c55e' : '#ef4444',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    {p.verified ? 'Verified' : 'Not Verified'}
                     <span style={{
-                      color: p.verified ? '#22c55e' : '#ef4444',
-                      fontWeight: 600,
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}>
-                      {p.verified ? 'Verified' : 'Not Verified'}
-                      <span style={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: '50%',
-                        background: p.verified ? '#22c55e' : '#ef4444',
-                        display: 'inline-block',
-                        marginLeft: 8
-                      }}></span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+                      width: 12,
+                      height: 12,
+                      borderRadius: '50%',
+                      background: p.verified ? '#22c55e' : '#ef4444',
+                      display: 'inline-block',
+                      marginLeft: 8
+                    }}></span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </main>
     </div>
