@@ -57,19 +57,40 @@ function HomeScreen() {
   const handleScan = async () => {
     setScanning(true);
     setError(null);
+  
     try {
-      const res = await zoomSdk.getMeetingParticipants();
-      const list = (res?.participants || []).map((p) => ({
+      // Step 1: Get meeting ID
+      const context = await zoomSdk.getMeetingContext();
+      const meetingId = context.meetingId;
+  
+      // Step 2: POST to backend to start Zoom → RTMP stream
+      const res = await fetch("https://ten-donkeys-bet.loca.lt/start-stream", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ meetingId })
+      });
+  
+      const result = await res.json();
+      console.log("🎥 Stream started:", result.message);
+  
+      // Step 3: Proceed with rest of your scan logic
+      const zoomRes = await zoomSdk.getMeetingParticipants();
+      const list = (zoomRes?.participants || []).map((p) => ({
         ...p,
-        verified: Math.random() > 0.5 // Random for demo
+        verified: Math.random() > 0.5 // Placeholder logic
       }));
+  
       setParticipants(list);
     } catch (err) {
-      setError('Could not fetch participants. Please make sure you are in a Zoom meeting and have the right permissions.');
+      console.error("🚨 Stream trigger failed:", err);
+      setError("Failed to start stream or fetch participants.");
     } finally {
       setScanning(false);
     }
   };
+  
 
   return (
     <div className="home-container">
