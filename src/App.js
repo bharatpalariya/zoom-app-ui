@@ -64,7 +64,7 @@ function HomeScreen() {
       const meetingId = context.meetingId;
   
       // Step 2: POST to backend to start Zoom → RTMP stream
-      const res = await fetch("https://yellow-ravens-deny.loca.lt/start-stream", {
+      const res = await fetch("https://sour-impalas-agree.loca.lt/start-stream", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
