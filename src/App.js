@@ -164,7 +164,7 @@ function App() {
           zoomSdk.getMeetingParticipants()
         ]);
       })
-      .then(([meetingContext, userContext]) => {
+      .then(([meetingContext, userContext, participants]) => {
         console.log('Zoom meeting context:', meetingContext);
         console.log('Zoom user context:', userContext);
         // You can now use userContext.userId, userContext.email, etc.
