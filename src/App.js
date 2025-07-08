@@ -155,12 +155,13 @@ function App() {
 
   useEffect(() => {
     zoomSdk.config({
-      capabilities: ['getMeetingContext', 'getUserContext'],
+      capabilities: ['getMeetingContext', 'getUserContext','getMeetingParticipants'],
     })
       .then(() => {
         return Promise.all([
           zoomSdk.getMeetingContext(),
-          zoomSdk.getUserContext()
+          zoomSdk.getUserContext(),
+          zoomSdk.getMeetingParticipants()
         ]);
       })
       .then(([meetingContext, userContext]) => {
