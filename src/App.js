@@ -68,7 +68,7 @@ function HomeScreen() {
       console.log("🎥 log_2st");
       const context = await zoomSdk.getMeetingContext();
       console.log("🎥 log_3st");
-      const meetingId = context.meetingID;
+      const meetingId = context.meetingId;
       // console.log("🎥 Meeting Id:", context.meetingID);
   
       // Step 2: POST to backend to start Zoom → RTMP stream
