@@ -58,27 +58,21 @@ function HomeScreen() {
     setScanning(true);
     setError(null);
   
+    //checking old
     try {
       // Step 1: Get meeting ID
-      console.log("🎥 log_1st");
-      // await zoomSdk.config({
-      //   capabilities: ['getMeetingContext'],
-      //   version: '0.16.31', // or whichever version you're using
-      // });
-      console.log("🎥 log_2st");
       const context = await zoomSdk.getMeetingContext();
-      console.log("🎥 log_3st");
       const meetingId = context.meetingId;
-      // console.log("🎥 Meeting Id:", context.meetingID);
   
       // Step 2: POST to backend to start Zoom → RTMP stream
-      const res = await fetch("https://13.126.103.39/start-stream", {
+      const res = await fetch("https://sour-impalas-agree.loca.lt/start-stream", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ meetingId })
       });
+
   
       const result = await res.json();
       console.log("🎥 Stream started:", result.message);
