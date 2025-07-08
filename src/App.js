@@ -168,6 +168,7 @@ function App() {
         console.log('Zoom meeting context:', meetingContext);
         console.log('Zoom user context:', userContext);
         // You can now use userContext.userId, userContext.email, etc.
+        console.log('Participants on load:', participants);
         navigate('/home');
       })
       .catch((err) => {
