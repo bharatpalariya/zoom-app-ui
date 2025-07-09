@@ -64,9 +64,9 @@ function HomeScreen() {
     //checking old
     try {
       // Step 1: Get meeting ID
-      await zoomSdk.config({
-      capabilities: ['getMeetingContext', 'getUserContext', 'getMeetingParticipants'],
-    });
+    //   await zoomSdk.config({
+    //   capabilities: ['getMeetingContext', 'getUserContext', 'getMeetingParticipants'],
+    // });
     setError("handleScan:2");
 
       const context = await zoomSdk.getMeetingContext();
@@ -77,12 +77,13 @@ function HomeScreen() {
       // Step 2: POST to backend to start Zoom → RTMP stream
       let res, result;
       try {
-        res = await fetch("https://13.126.103.39/start-stream", {
+        res = await fetch("http://13.126.103.39:5000/start-stream", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ "meetingId": "9217312" })
+          body: JSON.stringify({ "meetingId": meetingId }),
+          redirect:"follow"
         });
         setError("handleScan:5");
         result = await res.json();
