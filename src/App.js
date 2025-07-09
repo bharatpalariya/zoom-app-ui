@@ -39,6 +39,9 @@ function HomeScreen() {
       setScanning(true);
       setError(null);
       try {
+        await zoomSdk.config({
+          capabilities: ['getMeetingContext', 'getUserContext', 'getMeetingParticipants'],
+        });
         const res = await zoomSdk.getMeetingParticipants();
         const list = (res?.participants || []).map((p) => ({
           ...p,
@@ -61,6 +64,10 @@ function HomeScreen() {
     //checking old
     try {
       // Step 1: Get meeting ID
+      await zoomSdk.config({
+      capabilities: ['getMeetingContext', 'getUserContext', 'getMeetingParticipants'],
+    });
+
       const context = await zoomSdk.getMeetingContext();
       const meetingId = context.meetingId;
   
