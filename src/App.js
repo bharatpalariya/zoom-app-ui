@@ -77,7 +77,7 @@ function HomeScreen() {
       // Step 2: POST to backend to start Zoom → RTMP stream
       let res, result;
       try {
-        setError("handleScan:5"+meetingId);
+        setError("handleScan:5" + meetingId);
         res = await fetch("https://zoom-stream-backend.sapidblue.in/start-stream", {
           method: "POST",
           headers: {
@@ -85,23 +85,25 @@ function HomeScreen() {
           },
           body: JSON.stringify({ "meetingId": meetingId }),
         });
-        setError("handleScan:6");
+
+        if (!res.ok) {
+          // Try to get error details from the response body
+          let errorBody = await res.text();
+          setError(`HTTP ${res.status} ${res.statusText}: ${errorBody}`);
+          throw new Error(`HTTP ${res.status} ${res.statusText}: ${errorBody}`);
+        }
+
         result = await res.json();
         console.log("🎥 Stream started:", result.message);
       } catch (err) {
-        setError("handleScan:6-api-catch"+err+meetingId);
-        let errorDetails = "Unknown error";
-    
-        if (res) {
-          try {
-            const body = await res.text();
-            errorDetails += ` | Response status: ${res.status} ${res.statusText} | Body: ${body}`;
-          } catch (bodyErr) {
-            errorDetails += ` | Failed to parse error body: ${bodyErr.message}`;
-          }
+        // err can be an Error object, or a string, or something else
+        let errorDetails = "";
+        if (err instanceof Error) {
+          errorDetails = err.message + (err.stack ? "\n" + err.stack : "");
+        } else {
+          errorDetails = JSON.stringify(err);
         }
-      
-        setError(`handleScan: ERROR → ${errorDetails} | meetingId: ${meetingId}`);
+        setError("handleScan: ERROR → " + errorDetails + " | meetingId: " + meetingId);
         setScanning(false);
         return;
       }
