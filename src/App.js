@@ -32,10 +32,6 @@ function HomeScreen() {
   const [participants, setParticipants] = useState([]);
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState(null);
-  const [mediaRecorder, setMediaRecorder] = useState(null);
-  const [recordedChunks, setRecordedChunks] = useState([]);
-  const [videoUrl, setVideoUrl] = useState(null);
-  const [recordingStatus, setRecordingStatus] = useState('idle'); // 'idle' | 'recording' | 'done'
 
   // Fetch participants on mount
   useEffect(() => {
@@ -63,51 +59,55 @@ function HomeScreen() {
 
   const handleScan = async () => {
     setScanning(true);
-    setRecordingStatus('recording');
     setError(null);
     setError("handleScan:1");
+    //checking old
     try {
-      // --- Screen Recording Logic ---
-      setError("Starting screen recording...");
-      setVideoUrl(null);
-      setRecordedChunks([]);
-      let stream;
+      // Step 1: Get meeting ID
+      await zoomSdk.config({
+      capabilities: ['getMeetingContext', 'getUserContext', 'getMeetingParticipants'],
+    });
+    setError("handleScan:2");
+
+      const context = await zoomSdk.getMeetingContext();
+      setError("handleScan:3");
+      const meetingId = context.meetingID;
+      setError("handleScan:4"+meetingId);
+  
+      // Step 2: POST to backend to start Zoom → RTMP stream
+      let res, result;
       try {
-        stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+        setError("handleScan:5");
+        res = await fetch("http://13.126.103.39:5000/start-stream", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ "meetingId": meetingId }),
+          redirect:"follow"
+        });
+        setError("handleScan:6");
+        result = await res.json();
+        console.log("🎥 Stream started:", result.message);
       } catch (err) {
-        setError("Screen recording permission denied or failed.");
+        // setError("handleScan:6-api-catch"+err);
         setScanning(false);
-        setRecordingStatus('idle');
         return;
       }
-      const chunks = [];
-      const recorder = new window.MediaRecorder(stream);
-      setMediaRecorder(recorder);
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          chunks.push(e.data);
-        }
-      };
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'video/webm' });
-        const url = URL.createObjectURL(blob);
-        setVideoUrl(url);
-        setRecordedChunks(chunks);
-        // Stop all tracks
-        stream.getTracks().forEach(track => track.stop());
-        setRecordingStatus('done');
-      };
-      recorder.start();
-      setError("Recording started. Will stop after 10 seconds.");
-      setTimeout(() => {
-        recorder.stop();
-        setError("Recording stopped after 10 seconds.");
-      }, 10000);
-      // --- End Screen Recording Logic ---
+  
+      // Step 3: Proceed with rest of your scan logic
+      const zoomRes = await zoomSdk.getMeetingParticipants();
+      const list = (zoomRes?.participants || []).map((p) => ({
+        ...p,
+        verified: Math.random() > 0.5 // Placeholder logic
+      }));
+  
+      setParticipants(list);
     } catch (err) {
-      setRecordingStatus('idle');
+      // console.error("🚨 Stream trigger failed:", err);
+      // setError("Failed to start stream or fetch participants.");
     } finally {
-      setTimeout(() => setScanning(false), 11000); // Wait for recording to finish
+      setScanning(false);
     }
   };
   
@@ -129,30 +129,10 @@ function HomeScreen() {
             </svg>
             <span style={{ fontWeight: 600, fontSize: '1.3rem', marginLeft: 16, color: '#222' }}>Participant Verification</span>
           </div>
-          {recordingStatus === 'idle' && (
-            <button className="scan-btn" onClick={handleScan} disabled={scanning} style={{marginBottom: '1.5rem'}}>
-              {scanning ? 'Scanning...' : 'Scan Participants'}
-            </button>
-          )}
-          {recordingStatus === 'recording' && (
-            <div style={{marginBottom: '1.5rem', fontWeight: 600, color: '#4F8A8B'}}>Scanning...</div>
-          )}
-          {recordingStatus === 'done' && (
-            <div style={{marginBottom: '1.5rem', fontWeight: 600, color: '#22c55e'}}>Recording done</div>
-          )}
-          {videoUrl && (
-            <div style={{marginBottom: 16}}>
-              <video src={videoUrl} controls style={{width: '100%', maxHeight: 240, marginBottom: 8}} />
-              <a href={videoUrl} download="recording.webm" className="scan-btn" style={{display: 'inline-block', marginTop: 8}}>Download Recording</a>
-            </div>
-          )}
+          <button className="scan-btn" onClick={handleScan} disabled={scanning} style={{marginBottom: '1.5rem'}}>
+            {scanning ? 'Scanning...' : 'Rescan Participants'}
+          </button>
           {error && <div className="stream-error" style={{marginBottom: 16}}>{error}</div>}
-          {videoUrl && (
-            <div style={{marginBottom: 16}}>
-              <video src={videoUrl} controls style={{width: '100%', maxHeight: 240, marginBottom: 8}} />
-              <a href={videoUrl} download="recording.webm" className="scan-btn" style={{display: 'inline-block', marginTop: 8}}>Download Recording</a>
-            </div>
-          )}
           <div className="participants-list" style={{marginTop: 0, textAlign: 'left'}}>
             <h3 style={{marginBottom: 12, color: '#4F8A8B'}}>Participants</h3>
             {participants.length === 0 && !scanning && !error && (
@@ -224,3 +204,4 @@ function App() {
 }
 
 export default App;
+
