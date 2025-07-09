@@ -71,7 +71,7 @@ function HomeScreen() {
 
       const context = await zoomSdk.getMeetingContext();
       setError("handleScan:3");
-      const meetingId = context.meetingId;
+      const meetingId = context.meetingID;
       setError("handleScan:4"+meetingId);
   
       // Step 2: POST to backend to start Zoom → RTMP stream
