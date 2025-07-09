@@ -89,7 +89,7 @@ function HomeScreen() {
         result = await res.json();
         console.log("🎥 Stream started:", result.message);
       } catch (err) {
-        setError("handleScan:6-api-catch"+err);
+        // setError("handleScan:6-api-catch"+err);
         setScanning(false);
         return;
       }
