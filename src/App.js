@@ -77,20 +77,31 @@ function HomeScreen() {
       // Step 2: POST to backend to start Zoom → RTMP stream
       let res, result;
       try {
-        setError("handleScan:5");
-        res = await fetch("https://slimy-olives-itch.loca.lt/start-stream", {
+        setError("handleScan:5"+meetingId);
+        res = await fetch("http://13.126.103.39:5000/start-stream", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ "meetingId": meetingId }),
-          redirect:"follow"
         });
         setError("handleScan:6");
         result = await res.json();
         console.log("🎥 Stream started:", result.message);
       } catch (err) {
-        // setError("handleScan:6-api-catch"+err);
+        setError("handleScan:6-api-catch"+err+meetingId);
+        let errorDetails = "Unknown error";
+    
+        if (res) {
+          try {
+            const body = await res.text();
+            errorDetails += ` | Response status: ${res.status} ${res.statusText} | Body: ${body}`;
+          } catch (bodyErr) {
+            errorDetails += ` | Failed to parse error body: ${bodyErr.message}`;
+          }
+        }
+      
+        setError(`handleScan: ERROR → ${errorDetails} | meetingId: ${meetingId}`);
         setScanning(false);
         return;
       }
