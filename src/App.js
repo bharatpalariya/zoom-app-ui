@@ -64,15 +64,15 @@ function HomeScreen() {
     //checking old
     try {
       // Step 1: Get meeting ID
-    //   await zoomSdk.config({
-    //   capabilities: ['getMeetingContext', 'getUserContext', 'getMeetingParticipants'],
-    // });
+      await zoomSdk.config({
+      capabilities: ['getMeetingContext', 'getUserContext', 'getMeetingParticipants'],
+    });
     setError("handleScan:2");
 
       const context = await zoomSdk.getMeetingContext();
       setError("handleScan:3");
       const meetingId = context.meetingId;
-      setError("handleScan:4");
+      setError("handleScan:4"+meetingId);
   
       // Step 2: POST to backend to start Zoom → RTMP stream
       let res, result;
