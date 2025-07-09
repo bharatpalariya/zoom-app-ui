@@ -60,16 +60,19 @@ function HomeScreen() {
   const handleScan = async () => {
     setScanning(true);
     setError(null);
-  
+    setError("handleScan:1");
     //checking old
     try {
       // Step 1: Get meeting ID
       await zoomSdk.config({
       capabilities: ['getMeetingContext', 'getUserContext', 'getMeetingParticipants'],
     });
+    setError("handleScan:2");
 
       const context = await zoomSdk.getMeetingContext();
+      setError("handleScan:3");
       const meetingId = context.meetingId;
+      setError("handleScan:4");
   
       // Step 2: POST to backend to start Zoom → RTMP stream
       const res = await fetch("https://13.126.103.39/start-stream", {
@@ -80,7 +83,7 @@ function HomeScreen() {
         body: JSON.stringify({ meetingId })
       });
 
-  
+      setError("handleScan:5");
       const result = await res.json();
       console.log("🎥 Stream started:", result.message);
   
@@ -93,8 +96,8 @@ function HomeScreen() {
   
       setParticipants(list);
     } catch (err) {
-      console.error("🚨 Stream trigger failed:", err);
-      setError("Failed to start stream or fetch participants.");
+      // console.error("🚨 Stream trigger failed:", err);
+      // setError("Failed to start stream or fetch participants.");
     } finally {
       setScanning(false);
     }
