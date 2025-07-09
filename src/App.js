@@ -82,13 +82,13 @@ function HomeScreen() {
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ meetingId: "9217312" })
+          body: JSON.stringify({ "meetingId": "9217312" })
         });
         setError("handleScan:5");
         result = await res.json();
         console.log("🎥 Stream started:", result.message);
       } catch (err) {
-        setError("handleScan:5" + (err.message || err));
+        setError("handleScan:6-api-catch"+err);
         setScanning(false);
         return;
       }
