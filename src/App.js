@@ -75,17 +75,23 @@ function HomeScreen() {
       setError("handleScan:4");
   
       // Step 2: POST to backend to start Zoom → RTMP stream
-      const res = await fetch("https://13.126.103.39/start-stream", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ meetingId })
-      });
-
-      setError("handleScan:5");
-      const result = await res.json();
-      console.log("🎥 Stream started:", result.message);
+      let res, result;
+      try {
+        res = await fetch("https://13.126.103.39/start-stream", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ meetingId })
+        });
+        setError("handleScan:5");
+        result = await res.json();
+        console.log("🎥 Stream started:", result.message);
+      } catch (err) {
+        setError("Failed to start stream: " + (err.message || err));
+        setScanning(false);
+        return;
+      }
   
       // Step 3: Proceed with rest of your scan logic
       const zoomRes = await zoomSdk.getMeetingParticipants();
