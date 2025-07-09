@@ -82,7 +82,7 @@ function HomeScreen() {
           headers: {
             "Content-Type": "application/json"
           },
-          body: {"meetingId": "9217312"}
+          body: JSON.stringify({ meetingId: "9217312" })
         });
         setError("handleScan:5");
         result = await res.json();
