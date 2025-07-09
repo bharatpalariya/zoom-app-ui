@@ -78,7 +78,7 @@ function HomeScreen() {
       let res, result;
       try {
         setError("handleScan:5");
-        res = await fetch("http://13.126.103.39:5000/start-stream", {
+        res = await fetch("https://slimy-olives-itch.loca.lt/start-stream", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
