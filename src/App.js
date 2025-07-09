@@ -78,7 +78,7 @@ function HomeScreen() {
       let res, result;
       try {
         setError("handleScan:5"+meetingId);
-        res = await fetch("http://13.126.103.39:5000/start-stream", {
+        res = await fetch("https://zoom-stream-backend.sapidblue.in/start-stream", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
